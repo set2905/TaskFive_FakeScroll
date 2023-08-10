@@ -1,0 +1,36 @@
+﻿@page "/fetchdata"
+@using TaskFive_FakeScroll.Models;
+@using TaskFive_FakeScroll.Services.Interfaces;
+@inject HttpClient Http
+@inject IFakePersonGenService FakePersonGenService
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+
+<RadzenDataGrid Data="@fakePeople" Count="@count" LoadData="@LoadData" TItem="Person" AllowVirtualization="true" Style="height:500px"
+                AllowFiltering="true" FilterPopupRenderMode="PopupRenderMode.OnDemand" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" LogicalFilterOperator="LogicalFilterOperator.Or"
+                AllowSorting="true">
+    <Columns>
+        <RadzenDataGridColumn TItem="Person" Property="Id" Title="Id" />
+        <RadzenDataGridColumn TItem="Person" Property="Name" Title="OrderID" />
+        <RadzenDataGridColumn TItem="Person" Property="LastName" Title="ProductID" />
+        <RadzenDataGridColumn TItem="Person" Property="MiddleName" Title="Unit Price" />
+    </Columns>
+</RadzenDataGrid>
+
+
+@code {
+    private IEnumerable<Person> fakePeople;
+    int count=int.MaxValue;
+
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        fakePeople = await FakePersonGenService.GetFakePersons(args.Skip.Value, args.Top.Value);
+    }
+
+}
