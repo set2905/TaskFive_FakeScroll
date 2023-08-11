@@ -10,14 +10,13 @@
         <RadzenRow>
             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
                 <RadzenDropDown TValue="string" Value=@currentLocale Data=@locales Change="@HandleLocaleChange" Style="width: 100%; max-width: 400px;" />
-                <RadzenTextBox @oninput="@HandleSeedChange" class="w-100" />
-
+                <RadzenTextBox ValueChanged="@HandleSeedChange" class="w-100" />
             </RadzenStack>
         </RadzenRow>
 
         <RadzenRow JustifyContent="JustifyContent.Center">
 
-            <RadzenDataGrid @ref="grid"  AllowColumnResize="true" Responsive="true" Density="Density.Default" Data="@fakePeople" Count="@count" LoadData="@LoadData" TItem="FakePerson" AllowVirtualization="true" Style="height:100%; max-height:800px">
+            <RadzenDataGrid @ref="grid" AllowColumnResize="true" Responsive="true" Density="Density.Default" Data="@fakePeople" Count="@count" LoadData="@LoadData" TItem="FakePerson" AllowVirtualization="true" Style="height:100%; max-height:800px">
                 <Columns>
                     <RadzenDataGridColumn MinWidth="25px" Width="25px" TItem="FakePerson" Property="Num" Title="№" />
                     <RadzenDataGridColumn Width="100px" TItem="FakePerson" Property="FullName" Title="Full Name" />
@@ -45,38 +44,42 @@
     private int currentTop;
     private int currentSeed;
 
-    private void LoadData(LoadDataArgs args)
+    private bool isRefreshInProgress = false;
+    private async Task LoadData(LoadDataArgs args)
     {
+        if (isRefreshInProgress) return;
         if (args == null) return;
         if (args.Skip == null||args.Top == null) return;
+        await Generate((int)args.Skip, (int)args.Top);
         currentSkip = (int)args.Skip;
         currentTop = (int)args.Top;
-        Generate();
         if (count >= int.MaxValue - 11) return;
         count = fakePeople.Last().Num+11;
     }
 
-    private void Generate(bool refresh = false)
+    private async Task Generate(int skip, int top, bool refresh = false)
     {
-        fakePeople = FakePersonGenService.GetFakePersons(currentSkip, currentTop, currentLocale, currentSeed);
         if (refresh)
         {
-            grid.Reload();
-            
+            await grid.Reload();
         }
+        fakePeople = FakePersonGenService.GetFakePersons(skip, top, currentLocale, currentSeed);
     }
 
-    private void HandleLocaleChange(object locale)
+    private async Task HandleLocaleChange(object locale)
     {
         currentLocale = $"{locale}";
-        Generate(true);
+        isRefreshInProgress = true;
+        await Generate(currentSkip, currentTop, true);
+        isRefreshInProgress = false;
     }
 
-    private void HandleSeedChange(ChangeEventArgs args)
+    private async Task HandleSeedChange(string value)
     {
-        if (args.Value == null) return;
-        currentSeed = args.Value.GetHashCode();
-        Generate(true);
+        currentSeed = value.GetHashCode();
+        isRefreshInProgress = true;
+        await Generate(currentSkip, currentTop, true);
+        isRefreshInProgress = false;
     }
 
 }
