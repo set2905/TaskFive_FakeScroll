@@ -3,25 +3,36 @@
 @using TaskFive_FakeScroll.Services.Interfaces;
 @inject HttpClient Http
 @inject IFakePersonGenService FakePersonGenService
+@inject IErrorGenerationService ErrorGenService
 
 <PageTitle>Fake people</PageTitle>
 <RadzenRow>
-    <RadzenColumn OffsetMD="1" SizeMD="10">
+    <RadzenColumn OffsetMD="1" SizeMD="10" Style="height:10vh">
         <RadzenRow>
-            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
-                <RadzenDropDown TValue="string" Value=@currentLocale Data=@locales Change="@HandleLocaleChange" Style="width: 100%; max-width: 400px;" />
-                <RadzenTextBox ValueChanged="@HandleSeedChange" class="w-100" />
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Wrap="FlexWrap.NoWrap">
+                    <RadzenText>
+                        Locale
+                    </RadzenText>
+                    <RadzenDropDown TValue="string" Value=@currentLocale Data=@locales Change="@HandleLocaleChange" Style="width: 100%; max-width: 400px;" />
+                </RadzenStack>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Wrap="FlexWrap.NoWrap">
+                    <RadzenText>
+                        Seed
+                    </RadzenText>
+                    <RadzenTextBox ValueChanged="@HandleSeedChange" class="w-100" />
+                </RadzenStack>
             </RadzenStack>
         </RadzenRow>
 
         <RadzenRow JustifyContent="JustifyContent.Center">
 
-            <RadzenDataGrid @ref="grid" AllowColumnResize="true" Responsive="true" Density="Density.Default" Data="@fakePeople" Count="@count" LoadData="@LoadData" TItem="FakePerson" AllowVirtualization="true" Style="height:100%; max-height:800px">
+            <RadzenDataGrid @ref="grid" AllowColumnResize="true" Responsive="true" Density="Density.Default" Data="@fakePeople" Count="@count" LoadData="@LoadData" TItem="FakePerson" VirtualizationOverscanCount="10" AllowVirtualization="true" Style="height:100%; max-height:80vh">
                 <Columns>
                     <RadzenDataGridColumn MinWidth="25px" Width="25px" TItem="FakePerson" Property="Num" Title="№" />
                     <RadzenDataGridColumn Width="100px" TItem="FakePerson" Property="FullName" Title="Full Name" />
                     <RadzenDataGridColumn Width="100px" TItem="FakePerson" Property="Phone" Title="Phone Number" />
-                    <RadzenDataGridColumn Width="300px" TItem="FakePerson" Property="Address" Title="Address" />
+                    <RadzenDataGridColumn Width="300px" TItem="FakePerson" Property="FullAddress" Title="Address" />
                 </Columns>
             </RadzenDataGrid>
 
@@ -40,11 +51,13 @@
       "ru",
       "de"
     };
+
     private int currentSkip;
     private int currentTop;
     private int currentSeed;
 
     private bool isRefreshInProgress = false;
+
     private async Task LoadData(LoadDataArgs args)
     {
         if (isRefreshInProgress) return;
@@ -61,25 +74,30 @@
     {
         if (refresh)
         {
+            isRefreshInProgress = refresh;
             await grid.Reload();
         }
         fakePeople = FakePersonGenService.GetFakePersons(skip, top, currentLocale, currentSeed);
+        ApplyErrors();
+        isRefreshInProgress = false;
     }
 
     private async Task HandleLocaleChange(object locale)
     {
         currentLocale = $"{locale}";
-        isRefreshInProgress = true;
         await Generate(currentSkip, currentTop, true);
-        isRefreshInProgress = false;
     }
 
     private async Task HandleSeedChange(string value)
     {
         currentSeed = value.GetHashCode();
-        isRefreshInProgress = true;
         await Generate(currentSkip, currentTop, true);
-        isRefreshInProgress = false;
     }
-
+    private void ApplyErrors()
+    {
+        foreach (FakePerson person in fakePeople)
+        {
+            person.FullName = ErrorGenService.ApplyRandomError(person.FullName);
+        }
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using Bogus;
 using Bogus.DataSets;
+using System.IO;
 
 namespace TaskFive_FakeScroll.Models
 {
@@ -93,6 +94,14 @@ namespace TaskFive_FakeScroll.Models
         public string FullName { get; set; }
         public Address Address { get; set; }
         public string Phone { get; set; }
+        public string FullAddress
+        {
+            get
+            {
+                string state = randomizer.Bool(.5f) ? Address.State+", " : "";
+                return $"{state}{Address.City}, {Address.Street}, {Address.Suite}";
+            }
+        }
     }
 }
 

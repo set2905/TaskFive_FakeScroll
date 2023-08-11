@@ -7,11 +7,6 @@
         public string City { get; set; }
         public string State { get; set; }
         public string ZipCode { get; set; }
-
-        public override string ToString()
-        {
-            return $"{State}, {City}, {Street}, {Suite}";
-        }
     }
     }
 
