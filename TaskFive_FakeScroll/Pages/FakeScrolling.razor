@@ -86,13 +86,16 @@
     private async Task HandleLocaleChange(object locale)
     {
         currentLocale = $"{locale}";
-        await Generate(currentSkip, currentTop, true);
+        FakePersonGenService.Refresh(fakePeople, currentSeed, currentLocale);
+        //await Generate(currentSkip, currentTop, true);
     }
 
     private async Task HandleSeedChange(string value)
     {
         currentSeed = value.GetHashCode();
-        await Generate(currentSkip, currentTop, true);
+        FakePersonGenService.Refresh(fakePeople, currentSeed, currentLocale);
+
+        //await Generate(currentSkip, currentTop, true);
     }
     private void ApplyErrors()
     {
@@ -100,7 +103,7 @@
         {
             var fullNameBuilder = new StringBuilder(person.FullName);
             var addressBuilder = new StringBuilder(person.FullAddress);
-            ErrorGenService.ApplyRandomErrors(1000, person.Random, fullNameBuilder, addressBuilder);
+            ErrorGenService.ApplyRandomErrors(0, person.Random, fullNameBuilder, addressBuilder);
             person.FullName=fullNameBuilder.ToString();
         }
     }

@@ -34,6 +34,13 @@ namespace TaskFive_FakeScroll.Models
             Num=num;
         }
 
+        public void Refresh(int seed,string locale)
+        {
+            this.GetDataSources(locale);
+            this.Random=new Randomizer(seed);
+            Populate();
+        }
+
         internal FakePerson(Randomizer randomizer, string locale = "en", int num = 0)
         {
             this.GetDataSources(locale);

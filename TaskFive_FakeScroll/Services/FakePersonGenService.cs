@@ -10,14 +10,16 @@ namespace TaskFive_FakeScroll.Services
             for (int i = skip; i <= skip+take; i++)
             {
                 int localSeed = seed+i;
-                result.Add(CreateFakePerson(locale, localSeed, i));
+                result.Add(new(locale, localSeed, i));
             }
             return result;
         }
 
-        private FakePerson CreateFakePerson(string locale, int seed, int num)
+        public void Refresh(IEnumerable<FakePerson> toReferesh, int seed, string locale)
         {
-            return new(locale, seed, num);
+            //local seed в отдлельный метод!!!
+            foreach (FakePerson fakePerson in toReferesh)
+                fakePerson.Refresh(seed+fakePerson.Num, locale);
         }
     }
 }
