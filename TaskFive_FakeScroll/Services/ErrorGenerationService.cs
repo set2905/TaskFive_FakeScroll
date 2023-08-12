@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using System;
 using System.Text;
 using TaskFive_FakeScroll.Services.Interfaces;
 
@@ -13,14 +14,25 @@ namespace TaskFive_FakeScroll.Services
             AddRandomChar
         };
 
-        public void ApplyRandomErrors(int count, Randomizer random, string? locale, params StringBuilder[] applyTo)
+        public void ApplyRandomErrors(double errorFreq, Randomizer random, string? locale, params StringBuilder[] applyTo)
         {
-            for (int i = 0; i<count; i++)
+            var errorProbability = errorFreq - Math.Truncate(errorFreq);
+            if (random.Double(0, 1)<errorProbability)
             {
-                StringBuilder applyToElement = random.ArrayElement(applyTo);
-                var randomErrorMethod = GetRandomErrorMethod(random);
-                randomErrorMethod(applyToElement, random, locale);
+                ApplyRandomError(random, locale, applyTo);
             }
+            var errorCount = Math.Floor(errorFreq);
+            for (int i = 0; i<errorCount; i++)
+            {
+                ApplyRandomError(random, locale, applyTo);
+            }
+        }
+
+        private void ApplyRandomError(Randomizer random, string? locale, StringBuilder[] applyTo)
+        {
+            StringBuilder applyToElement = random.ArrayElement(applyTo);
+            var randomErrorMethod = GetRandomErrorMethod(random);
+            randomErrorMethod(applyToElement, random, locale);
         }
 
         private Action<StringBuilder, Randomizer, string?> GetRandomErrorMethod(Randomizer random)

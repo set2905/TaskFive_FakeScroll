@@ -10,27 +10,39 @@
 <RadzenRow>
     <RadzenColumn OffsetMD="1" SizeMD="10" Style="height:10vh">
         <RadzenRow>
-            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
-                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Wrap="FlexWrap.NoWrap">
-                    <RadzenText>
-                        Locale
+            <RadzenPanel AllowCollapse="true" Class="rz-my-10 rz-mx-auto w-100">
+                <HeaderTemplate>
+                    <RadzenText TextStyle="TextStyle.H6" Class="rz-display-flex rz-align-items-center rz-m-0">
+                        <RadzenIcon Icon="input" class="rz-mr-1" /><b>Settings</b>
                     </RadzenText>
-                    <RadzenDropDown TValue="string" Value=@currentLocale Data=@locales Change="@HandleLocaleChange" Style="width: 100%; max-width: 400px;" />
-                </RadzenStack>
-                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Wrap="FlexWrap.NoWrap">
-                    <RadzenText>
-                        Seed
-                    </RadzenText>
-                    <RadzenTextBox ValueChanged="@HandleSeedChange" class="w-100" />
-                </RadzenStack>
-                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Wrap="FlexWrap.NoWrap">
-                    <RadzenText>
-                        Error value
-                    </RadzenText>
-                    <RadzenNumeric TValue="int" Value=@currentErrAmount Min="0" Max="1000" Change="@((args)=>HandleErrorNumericChange(args))" class="w-100" />
-                    <RadzenSlider TValue="int" Value=@currentErrAmount Min="0" Max="10" Change="@((args)=>HandleErrorNumericChange(args))" Step="1"></RadzenSlider>
-                </RadzenStack>
-            </RadzenStack>
+                </HeaderTemplate>
+                <ChildContent>
+                    <RadzenStack  Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
+
+                        <RadzenStack class="rz-border-base-400 rz-p-2" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.NoWrap">
+                            <RadzenText>
+                                Locale
+                            </RadzenText>
+                            <RadzenDropDown TValue="string" Value=@currentLocale Data=@locales Change="@HandleLocaleChange" />
+                        </RadzenStack>
+
+                        <RadzenStack class="rz-border-base-400 rz-p-2" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.NoWrap">
+                            <RadzenText>
+                                Seed
+                            </RadzenText>
+                            <RadzenTextBox ValueChanged="@HandleSeedChange" />
+                        </RadzenStack>
+
+                        <RadzenStack class="rz-border-base-400 rz-p-2" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.NoWrap">
+                            <RadzenText>
+                                Error value
+                            </RadzenText>
+                            <RadzenNumeric TValue="double" Value=@currentErrFrequency Min="0" Max="1000" Change="@((args)=>HandleErrorNumericChange(args))" Step="0.25" />
+                            <RadzenSlider TValue="double" Value="@sliderErrFrequency" Min="0" Max="10" Change="@((args)=>HandleErrorSliderChange(args))" Step="0.25"></RadzenSlider>
+                        </RadzenStack>
+                    </RadzenStack>
+                </ChildContent>
+            </RadzenPanel>
         </RadzenRow>
 
         <RadzenRow JustifyContent="JustifyContent.Center">
@@ -63,7 +75,8 @@
     private int currentSkip;
     private int currentTop;
     private int currentSeed;
-    private int currentErrAmount;
+    private double currentErrFrequency = 0;
+    private double sliderErrFrequency = 0;
 
     private bool isRefreshInProgress = false;
 
@@ -76,6 +89,7 @@
         currentSkip = (int)args.Skip;
         currentTop = (int)args.Top;
         if (count >= int.MaxValue - 11) return;
+        if (fakePeople == null) return;
         count = fakePeople.Last().Num+11;
     }
 
@@ -91,33 +105,42 @@
         isRefreshInProgress = false;
     }
 
-    private async Task HandleLocaleChange(object locale)
+    private void HandleLocaleChange(object locale)
     {
+        if (fakePeople == null) return;
         currentLocale = $"{locale}";
         FakePersonGenService.Refresh(fakePeople, currentSeed, currentLocale);
         ApplyErrors();
     }
 
-    private async Task HandleSeedChange(string value)
+    private void HandleSeedChange(string value)
     {
+        if (fakePeople == null) return;
         currentSeed = value.GetHashCode();
         FakePersonGenService.Refresh(fakePeople, currentSeed, currentLocale);
         ApplyErrors();
     }
 
-    private async Task HandleErrorNumericChange(int value)
+    private void HandleErrorNumericChange(double value)
     {
-        currentErrAmount = value;
+        if (fakePeople == null) return;
+        currentErrFrequency = value;
+        sliderErrFrequency = Math.Min(value, 10);
         FakePersonGenService.Refresh(fakePeople, currentSeed, currentLocale);
         ApplyErrors();
     }
+    private void HandleErrorSliderChange(double value)
+    {
+        HandleErrorNumericChange(value);
+    }
     private void ApplyErrors()
     {
+        if (fakePeople == null) return;
         foreach (FakePerson person in fakePeople)
         {
             var fullNameBuilder = new StringBuilder(person.FullName);
             var addressBuilder = new StringBuilder(person.FullAddress);
-            ErrorGenService.ApplyRandomErrors(currentErrAmount, person.Random, currentLocale, fullNameBuilder, addressBuilder);
+            ErrorGenService.ApplyRandomErrors(currentErrFrequency, person.Random, currentLocale, fullNameBuilder, addressBuilder);
             person.FullName=fullNameBuilder.ToString();
         }
     }
