@@ -5,7 +5,7 @@ namespace TaskFive_FakeScroll.Services.Interfaces
 {
     public interface IErrorGenerationService
     {
-        public Action<StringBuilder, Randomizer>[] ErrorMethods { get; }
-        public void ApplyRandomErrors(int count,Randomizer random, params StringBuilder[] applyTo);
+        public Action<StringBuilder, Randomizer, string?>[] ErrorMethods { get; }
+        public void ApplyRandomErrors(int count,Randomizer random, string? locale, params StringBuilder[] applyTo);
     }
 }

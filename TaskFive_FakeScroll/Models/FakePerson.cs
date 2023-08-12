@@ -34,7 +34,7 @@ namespace TaskFive_FakeScroll.Models
             Num=num;
         }
 
-        public void Refresh(int seed,string locale)
+        public void Refresh(int seed, string locale)
         {
             this.GetDataSources(locale);
             this.Random=new Randomizer(seed);
@@ -54,6 +54,7 @@ namespace TaskFive_FakeScroll.Models
             this.DsName = this.Notifier.Flow(new Name(locale));
             this.DsPhoneNumbers = this.Notifier.Flow(new PhoneNumbers(locale));
             this.DsAddress = this.Notifier.Flow(new Bogus.DataSets.Address(locale));
+            CurrentLocale=locale;
         }
 
         protected internal virtual void Populate()
@@ -109,6 +110,7 @@ namespace TaskFive_FakeScroll.Models
                 return $"{state}{Address.City}, {Address.Street}, {Address.Suite}";
             }
         }
+        public string CurrentLocale = "";
     }
 }
 
