@@ -15,7 +15,6 @@ namespace TaskFive_FakeScroll.Services
             return result;
         }
 
-
         private FakePerson CreateFakePerson(string locale, int seed, int num)
         {
             return new(locale, seed, num);

@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using System.Text;
 @using TaskFive_FakeScroll.Models;
 @using TaskFive_FakeScroll.Services.Interfaces;
 @inject HttpClient Http
@@ -97,7 +98,10 @@
     {
         foreach (FakePerson person in fakePeople)
         {
-            person.FullName = ErrorGenService.ApplyRandomError(person.FullName);
+            var fullNameBuilder = new StringBuilder(person.FullName);
+            var addressBuilder = new StringBuilder(person.FullAddress);
+            ErrorGenService.ApplyRandomErrors(1000, person.Random, fullNameBuilder, addressBuilder);
+            person.FullName=fullNameBuilder.ToString();
         }
     }
 }

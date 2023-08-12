@@ -1,24 +1,46 @@
-﻿using TaskFive_FakeScroll.Services.Interfaces;
+﻿using Bogus;
+using System.Text;
+using TaskFive_FakeScroll.Services.Interfaces;
 
 namespace TaskFive_FakeScroll.Services
 {
     public class ErrorGenerationService : IErrorGenerationService
     {
-        private readonly Random random = new Random();
-        public Func<string, string>[] ErrorMethods => new Func<string, string>[]
+        public Action<StringBuilder, Randomizer>[] ErrorMethods => new Action<StringBuilder, Randomizer>[]
         {
             RemoveRandomChar,
+            SwapChars
         };
-        public string ApplyRandomError(string applyTo)
+
+        public void ApplyRandomErrors(int count, Randomizer random, params StringBuilder[] applyTo)
         {
-            return ErrorMethods[random.Next(0, ErrorMethods.Length)](applyTo);
+            for (int i = 0; i<count; i++)
+            {
+                StringBuilder applyToElement = random.ArrayElement(applyTo);
+                Action<StringBuilder, Randomizer> randomErrorMethod = GetRandomErrorMethod(random);
+                randomErrorMethod(applyToElement, random);
+            }
         }
 
-        private string RemoveRandomChar(string removeFrom)
+        private Action<StringBuilder, Randomizer> GetRandomErrorMethod(Randomizer random)
         {
-            int startIndex = random.Next(0, removeFrom.Length-1);
-            return removeFrom.Remove(startIndex, 1);
+            return random.ArrayElement(ErrorMethods);
         }
 
+        private void RemoveRandomChar(StringBuilder stringBuilder, Randomizer random)
+        {
+            if (stringBuilder.Length <= 2) return;
+            int startIndex =  random.Number(0, stringBuilder.Length-2);
+            stringBuilder.Remove(startIndex, 1);
+        }
+
+        private void SwapChars(StringBuilder stringBuilder, Randomizer random)
+        {
+            if (stringBuilder.Length <= 2) return;
+            int startIndex = random.Number(0, stringBuilder.Length-2);
+            char tmp = stringBuilder[startIndex];
+            stringBuilder[startIndex] = stringBuilder[startIndex+1];
+            stringBuilder[startIndex+1] = tmp;
+        }
     }
 }
