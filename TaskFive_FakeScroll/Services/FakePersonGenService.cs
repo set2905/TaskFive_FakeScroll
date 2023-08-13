@@ -13,6 +13,8 @@ namespace TaskFive_FakeScroll.Services
         /// <param name="seed"></param>
         public List<FakePerson> GetFakePersons(int skip, int take, string locale, int seed)
         {
+            if (skip < 0|| take<0) throw new ArgumentException("skip or take values cant be negative");
+            if (locale.Length==0) locale = "en";
             List<FakePerson> result = new();
             for (int i = skip; i <= skip+take; i++)
             {
@@ -29,6 +31,7 @@ namespace TaskFive_FakeScroll.Services
         /// <param name="locale"></param>
         public void Refresh(IEnumerable<FakePerson> toReferesh, int seed, string locale)
         {
+            if (locale.Length==0) locale = "en";
             foreach (FakePerson fakePerson in toReferesh)
                 fakePerson.Refresh(seed+fakePerson.Num, locale);
         }

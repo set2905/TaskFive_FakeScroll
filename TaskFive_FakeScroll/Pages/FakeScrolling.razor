@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using System.Text;
+@using Bogus;
 @using TaskFive_FakeScroll.Models;
 @using TaskFive_FakeScroll.Services.Interfaces;
 @inject IFakePersonGenService FakePersonGenService
@@ -19,7 +20,7 @@
                 </HeaderTemplate>
                 <ChildContent>
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceEvenly" AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap">
-                        
+
                         <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.NoWrap">
                             <RadzenText>
                                 Locale:
@@ -31,7 +32,11 @@
                             <RadzenText>
                                 Seed:
                             </RadzenText>
-                            <RadzenTextBox ValueChanged="@HandleSeedChange" />
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" Wrap="FlexWrap.NoWrap">
+                                <RadzenTextBox Value="@currentSeedWord" ValueChanged="@HandleSeedChange" />
+                                <RadzenButton Click="@RandomizeSeed" Icon="autorenew" />
+                            </RadzenStack>
+
                         </RadzenStack>
 
                         <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.NoWrap">
@@ -88,6 +93,7 @@
     private int currentSkip;
     private int currentTop;
     private int currentSeed;
+    private string currentSeedWord = "0";
     private double currentErrFrequency = 0;
     private double sliderErrFrequencyValue = 0;
 
@@ -128,6 +134,7 @@
     private void HandleSeedChange(string value)
     {
         if (fakePeople == null) return;
+        currentSeedWord = value;
         int parsedSeed;
         if (!int.TryParse(value, out parsedSeed)) parsedSeed = value.GetHashCode();
         try
@@ -164,9 +171,13 @@
         {
             var fullNameBuilder = new StringBuilder(person.FullName);
             var addressBuilder = new StringBuilder(person.FullAddress);
-            ErrorGenService.ApplyRandomErrors(currentErrFrequency, currentSeed+person.Num, currentLocale, fullNameBuilder, addressBuilder);
+            var zipCodeBuilder = new StringBuilder(person.Address.ZipCode);
+            var phoneBuilder = new StringBuilder(person.Phone);
+            ErrorGenService.ApplyRandomErrors(currentErrFrequency, currentSeed+person.Num, currentLocale, fullNameBuilder, addressBuilder, zipCodeBuilder, phoneBuilder);
             person.FullName=fullNameBuilder.ToString();
             person.FullAddress=addressBuilder.ToString();
+            person.Phone=phoneBuilder.ToString();
+            person.Address.ZipCode=zipCodeBuilder.ToString();
         }
     }
     private void ShowError(string message)
@@ -183,5 +194,13 @@
         var exportRecords = FakePersonGenService.GetFakePersons(0, fakePeople.Last().Num, currentLocale, currentSeed);
         ApplyErrors(exportRecords);
         await Exporter.DownloadExport(exportRecords);
+    }
+
+    private void RandomizeSeed()
+    {
+        Randomizer random = new();
+        currentSeedWord = random.Word();
+        HandleSeedChange(currentSeedWord);
+
     }
 }

@@ -42,7 +42,7 @@ namespace TaskFive_FakeScroll.Services
         /// <param name="applyTo"></param>
         public void ApplyRandomErrors(double errorFreq, int seed, string? locale, params StringBuilder[] applyTo)
         {
-            if (errorFreq == 0) return;
+            if (errorFreq <= 0||applyTo.Length==0) return;
             if (CurrentLocale!=locale) CurrentLocale = locale;
             Randomizer random = new(seed);
             var errorProbability = errorFreq - Math.Truncate(errorFreq);
@@ -56,6 +56,7 @@ namespace TaskFive_FakeScroll.Services
                 ApplyRandomError(random, locale, applyTo);
             }
         }
+
 
         private void ApplyRandomError(Randomizer random, string? locale, StringBuilder[] applyTo)
         {
@@ -87,10 +88,29 @@ namespace TaskFive_FakeScroll.Services
         private void AddRandomChar(StringBuilder stringBuilder, Randomizer random, string? locale)
         {
             if (stringBuilder.Length >= MAX_LENGTH) return;
-
-            lorem.Random = random;
-            string randomLetter = lorem.Letter();
+            string randomLetter;
+            if (IsStringBuilderContainsDigit(stringBuilder))
+            {
+                randomLetter=random.Number(0, 9).ToString();
+            }
+            else
+            {
+                lorem.Random = random;
+                randomLetter = lorem.Letter();
+            }
             stringBuilder.Insert(random.Number(0, stringBuilder.Length-1), randomLetter);
         }
+        private bool IsStringBuilderContainsDigit(StringBuilder stringBuilder)
+        {
+            for (int i = 0; i<stringBuilder.Length; i++)
+            {
+                if (char.IsDigit(stringBuilder[i]))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
 }
