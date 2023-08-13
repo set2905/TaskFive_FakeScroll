@@ -5,7 +5,7 @@
 @inject HttpClient Http
 @inject IFakePersonGenService FakePersonGenService
 @inject IErrorGenerationService ErrorGenService
-@inject IExporterService Exporter
+@inject IExporterService<FakePerson> Exporter
 @inject NotificationService NotificationService
 
 <PageTitle>Fake people</PageTitle>
@@ -19,7 +19,8 @@
                     </RadzenText>
                 </HeaderTemplate>
                 <ChildContent>
-                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceEvenly" AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap">
+                        
                         <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.NoWrap">
                             <RadzenText>
                                 Locale:
@@ -156,12 +157,12 @@
     }
     private void ApplyErrors(IEnumerable<FakePerson> applyTo)
     {
-        if (applyTo == null) return;
+        if (applyTo == null||currentErrFrequency==0) return;
         foreach (FakePerson person in applyTo)
         {
             var fullNameBuilder = new StringBuilder(person.FullName);
             var addressBuilder = new StringBuilder(person.FullAddress);
-            ErrorGenService.ApplyRandomErrors(currentErrFrequency, person.Random, currentLocale, fullNameBuilder, addressBuilder);
+            ErrorGenService.ApplyRandomErrors(currentErrFrequency, currentSeed+person.Num, currentLocale, fullNameBuilder, addressBuilder);
             person.FullName=fullNameBuilder.ToString();
             person.FullAddress=addressBuilder.ToString();
         }

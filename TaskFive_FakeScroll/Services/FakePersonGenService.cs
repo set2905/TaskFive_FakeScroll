@@ -1,4 +1,5 @@
-﻿using TaskFive_FakeScroll.Models;
+﻿using Bogus;
+using TaskFive_FakeScroll.Models;
 using TaskFive_FakeScroll.Services.Interfaces;
 namespace TaskFive_FakeScroll.Services
 {

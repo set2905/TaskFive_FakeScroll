@@ -1,14 +1,13 @@
 ﻿using BlazorDownloadFile;
 using Microsoft.JSInterop;
-using System.Net.Mime;
-using System;
 using TaskFive_FakeScroll.Services.Interfaces;
 using CsvHelper;
 using System.Globalization;
+using TaskFive_FakeScroll.Models;
 
 namespace TaskFive_FakeScroll.Services
 {
-    public class CsvExporterService : IExporterService
+    public class CsvExporterService : IExporterService<FakePerson>
     {
         private readonly IBlazorDownloadFileService blazorDownloadFileService;
 
@@ -17,13 +16,18 @@ namespace TaskFive_FakeScroll.Services
             this.blazorDownloadFileService=blazorDownloadFileService;
         }
 
-        public async Task DownloadExport(IEnumerable<object> records)
+        public async Task DownloadExport(IEnumerable<FakePerson> records)
         {
+            List<FakePersonCsvModel> csvRecords = new();
+            foreach (FakePerson r in records)
+            {
+                csvRecords.Add(new(r.Id, r.Num, r.FullName, r.Phone, r.FullAddress, r.Address.ZipCode));
+            }
             var memStream = new MemoryStream();
             var memStreamWriter = new StreamWriter(memStream);
             using (var csv = new CsvWriter(memStreamWriter, CultureInfo.InvariantCulture))
             {
-                csv.WriteRecords(records);
+                await csv.WriteRecordsAsync(csvRecords);
             }
 
             byte[] file = memStream.ToArray();
@@ -31,5 +35,23 @@ namespace TaskFive_FakeScroll.Services
         }
 
 
+    }
+    internal class FakePersonCsvModel
+    {
+        public FakePersonCsvModel(Guid id, int num, string fullName, string phone, string fullAddress, string zipCode)
+        {
+            Id=id;
+            Num=num;
+            FullName=fullName;
+            FullAddress=fullAddress;
+            Phone=phone;
+            ZipCode=zipCode;
+        }
+        public int Num { get; set; }
+        public Guid Id { get; set; }
+        public string FullName { get; set; }
+        public string Phone { get; set; }
+        public string FullAddress { get; set; }
+        public string ZipCode { get; set; }
     }
 }
