@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Radzen;
 using TaskFive_FakeScroll;
 using TaskFive_FakeScroll.Services;
 using TaskFive_FakeScroll.Services.Interfaces;
@@ -11,5 +12,6 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddTransient<IFakePersonGenService, FakePersonGenService>();
 builder.Services.AddTransient<IErrorGenerationService, ErrorGenerationService>();
+builder.Services.AddScoped<NotificationService>();
 
 await builder.Build().RunAsync();

@@ -43,10 +43,10 @@ namespace TaskFive_FakeScroll.Models
 
         internal FakePerson(Randomizer randomizer, string locale = "en", int num = 0)
         {
+            Num=num;
             this.GetDataSources(locale);
             this.Random = randomizer;
             this.Populate();
-            Num=num;
         }
 
         private void GetDataSources(string locale)
@@ -59,11 +59,11 @@ namespace TaskFive_FakeScroll.Models
 
         protected internal virtual void Populate()
         {
+            this.Id = randomizer.Guid();
             this.Gender = this.Random.Enum<Name.Gender>();
             this.FirstName = this.DsName.FirstName(this.Gender);
             this.LastName = this.DsName.LastName(this.Gender);
             this.FullName = $"{this.FirstName} {this.LastName}";
-
             this.Phone = this.DsPhoneNumbers.PhoneNumber();
 
             this.Address = new Address
@@ -74,6 +74,8 @@ namespace TaskFive_FakeScroll.Models
                 State = this.DsAddress.State(),
                 ZipCode = this.DsAddress.ZipCode(),
             };
+            string state = randomizer.Bool(.5f) ? Address.State+", " : "";
+            FullAddress = $"{state}{Address.City}, {Address.Street}, {Address.Suite}";
         }
 
         protected SeedNotifier Notifier = new SeedNotifier();
@@ -94,22 +96,16 @@ namespace TaskFive_FakeScroll.Models
         {
             return this.Notifier;
         }
-
         public Name.Gender Gender;
+        public Guid Id { get; set; }
+
         public int Num { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string FullName { get; set; }
         public Address Address { get; set; }
         public string Phone { get; set; }
-        public string FullAddress
-        {
-            get
-            {
-                string state = randomizer.Bool(.5f) ? Address.State+", " : "";
-                return $"{state}{Address.City}, {Address.Street}, {Address.Suite}";
-            }
-        }
+        public string FullAddress { get; set; }
         public string CurrentLocale = "";
     }
 }
