@@ -5,6 +5,7 @@
 @inject HttpClient Http
 @inject IFakePersonGenService FakePersonGenService
 @inject IErrorGenerationService ErrorGenService
+@inject IExporterService Exporter
 @inject NotificationService NotificationService
 
 <PageTitle>Fake people</PageTitle>
@@ -42,7 +43,9 @@
                                 <RadzenSlider TValue="double" Value="@sliderErrFrequency" Min="0" Max="10" Change="@((args)=>HandleErrorSliderChange(args))" Step="0.25"></RadzenSlider>
                             </RadzenStack>
                         </RadzenStack>
+                        <RadzenButton Click="@Export">
 
+                        </RadzenButton>
                     </RadzenStack>
                 </ChildContent>
             </RadzenPanel>
@@ -167,5 +170,10 @@
     private void ShowNotification(NotificationMessage message)
     {
         NotificationService.Notify(message);
+    }
+    private async Task Export()
+    {
+        if (fakePeople == null) return;
+        await Exporter.DownloadExport(fakePeople);
     }
 }

@@ -2,5 +2,7 @@
 {
     public interface IExporterService
     {
+        public Task DownloadExport(IEnumerable<object> records);
+
     }
 }
