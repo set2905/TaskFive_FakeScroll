@@ -44,7 +44,7 @@
                             </RadzenStack>
                         </RadzenStack>
                         <RadzenButton Click="@Export">
-
+                            Download CSV
                         </RadzenButton>
                     </RadzenStack>
                 </ChildContent>
@@ -59,6 +59,7 @@
                     <RadzenDataGridColumn Width="100px" TItem="FakePerson" Property="Id" Title="Id" />
                     <RadzenDataGridColumn Width="100px" TItem="FakePerson" Property="FullName" Title="Full Name" />
                     <RadzenDataGridColumn Width="100px" TItem="FakePerson" Property="Phone" Title="Phone Number" />
+                    <RadzenDataGridColumn Width="100px" TItem="FakePerson" Property="Address.ZipCode" Title="ZipCode" />
                     <RadzenDataGridColumn Width="300px" TItem="FakePerson" Property="FullAddress" Title="Address" />
                 </Columns>
             </RadzenDataGrid>
@@ -102,7 +103,7 @@
     private void Generate(int skip, int top)
     {
         fakePeople = FakePersonGenService.GetFakePersons(skip, top, currentLocale, currentSeed);
-        ApplyErrors();
+        ApplyErrors(fakePeople);
     }
 
     private void HandleLocaleChange(object locale)
@@ -118,7 +119,7 @@
             return;
         }
         currentLocale = $"{locale}";
-        ApplyErrors();
+        ApplyErrors(fakePeople);
     }
 
     private void HandleSeedChange(string value)
@@ -136,7 +137,8 @@
             return;
         }
         currentSeed = parsedSeed;
-        ApplyErrors();
+        ApplyErrors(fakePeople);
+
     }
 
     private void HandleErrorNumericChange(double value)
@@ -145,16 +147,17 @@
         currentErrFrequency = value;
         sliderErrFrequency = Math.Min(value, 10);
         FakePersonGenService.Refresh(fakePeople, currentSeed, currentLocale);
-        ApplyErrors();
+        ApplyErrors(fakePeople);
+
     }
     private void HandleErrorSliderChange(double value)
     {
         HandleErrorNumericChange(value);
     }
-    private void ApplyErrors()
+    private void ApplyErrors(IEnumerable<FakePerson> applyTo)
     {
-        if (fakePeople == null) return;
-        foreach (FakePerson person in fakePeople)
+        if (applyTo == null) return;
+        foreach (FakePerson person in applyTo)
         {
             var fullNameBuilder = new StringBuilder(person.FullName);
             var addressBuilder = new StringBuilder(person.FullAddress);
@@ -174,6 +177,8 @@
     private async Task Export()
     {
         if (fakePeople == null) return;
-        await Exporter.DownloadExport(fakePeople);
+        var exportRecords = FakePersonGenService.GetFakePersons(0, fakePeople.Last().Num, currentLocale, currentSeed);
+        ApplyErrors(exportRecords);
+        await Exporter.DownloadExport(exportRecords);
     }
 }
