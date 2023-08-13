@@ -16,6 +16,11 @@ namespace TaskFive_FakeScroll.Services
             this.blazorDownloadFileService=blazorDownloadFileService;
         }
 
+        /// <summary>
+        /// Converts <paramref name="records"/> to list of FakePersonCsvModel then writes it to .csv file and downloads it.
+        /// </summary>
+        /// <param name="records"></param>
+        /// <returns></returns>
         public async Task DownloadExport(IEnumerable<FakePerson> records)
         {
             List<FakePersonCsvModel> csvRecords = new();

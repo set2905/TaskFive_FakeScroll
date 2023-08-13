@@ -1,5 +1,4 @@
 ﻿using Bogus;
-using System;
 using System.Text;
 using TaskFive_FakeScroll.Services.Interfaces;
 
@@ -21,16 +20,28 @@ namespace TaskFive_FakeScroll.Services
             }
         }
         Bogus.DataSets.Lorem lorem = new();
+        /// <summary>
+        /// Methods that can be executed when applying errors
+        /// </summary>
         public Action<StringBuilder, Randomizer, string?>[] ErrorMethods => new Action<StringBuilder, Randomizer, string?>[]
         {
             RemoveRandomChar,
             SwapChars,
             AddRandomChar
         };
-
+        /// <summary>
+        /// Applies random <see cref="ErrorMethods"/> to <paramref name="applyTo"/> array of StringBuilders.
+        /// </summary>
+        /// <remarks>
+        /// Count of applied errors equals to floored <paramref name="errorFreq"/> PLUS additional error with probability of fractional digits of <paramref name="errorFreq"/>.
+        /// e.g. <paramref name="errorFreq"/> of 2,25 is guaranteed 2 errors and additional error with probability of 0.25.
+        /// </remarks>
+        /// <param name="errorFreq"></param>
+        /// <param name="seed"></param>
+        /// <param name="locale"></param>
+        /// <param name="applyTo"></param>
         public void ApplyRandomErrors(double errorFreq, int seed, string? locale, params StringBuilder[] applyTo)
         {
-
             if (errorFreq == 0) return;
             if (CurrentLocale!=locale) CurrentLocale = locale;
             Randomizer random = new(seed);

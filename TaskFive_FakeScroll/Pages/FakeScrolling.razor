@@ -2,7 +2,6 @@
 @using System.Text;
 @using TaskFive_FakeScroll.Models;
 @using TaskFive_FakeScroll.Services.Interfaces;
-@inject HttpClient Http
 @inject IFakePersonGenService FakePersonGenService
 @inject IErrorGenerationService ErrorGenService
 @inject IExporterService<FakePerson> Exporter
@@ -40,8 +39,8 @@
                                 Error value:
                             </RadzenText>
                             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.NoWrap">
-                                <RadzenNumeric TValue="double" Value=@currentErrFrequency Min="0" Max="1000" Change="@((args)=>HandleErrorNumericChange(args))" Step="0.25" />
-                                <RadzenSlider TValue="double" Value="@sliderErrFrequency" Min="0" Max="10" Change="@((args)=>HandleErrorSliderChange(args))" Step="0.25"></RadzenSlider>
+                                <RadzenNumeric TValue="double" Value=@currentErrFrequency Min="0" Max="@MAX_ERRORFREQ_NUMERIC" Change="@((args)=>HandleErrorNumericChange(args))" Step="@ERRORFREQ_STEP" />
+                                <RadzenSlider TValue="double" Value="@sliderErrFrequencyValue" Min="0" Max="10" Change="@((args)=>HandleErrorSliderChange(args))" Step="@ERRORFREQ_STEP"></RadzenSlider>
                             </RadzenStack>
                         </RadzenStack>
                         <RadzenButton Click="@Export">
@@ -54,7 +53,7 @@
 
         <RadzenRow JustifyContent="JustifyContent.Center">
 
-            <RadzenDataGrid @ref="grid" AllowColumnResize="true" Responsive="true" Density="Density.Default" Data="@fakePeople" Count="@count" LoadData="@LoadData" TItem="FakePerson" VirtualizationOverscanCount="10" AllowVirtualization="true" Style="height:100%; max-height:80vh">
+            <RadzenDataGrid AllowColumnResize="true" Responsive="true" Density="Density.Default" Data="@fakePeople" Count="@currentCount" LoadData="@LoadData" TItem="FakePerson" VirtualizationOverscanCount="10" AllowVirtualization="true" Style="height:100%; max-height:80vh">
                 <Columns>
                     <RadzenDataGridColumn MinWidth="25px" Width="25px" TItem="FakePerson" Property="Num" Title="№" />
                     <RadzenDataGridColumn Width="100px" TItem="FakePerson" Property="Id" Title="Id" />
@@ -70,9 +69,12 @@
 </RadzenRow>
 
 @code {
-    private RadzenDataGrid<FakePerson> grid = new();
+    private const int MAX_ERRORFREQ_NUMERIC = 1000;
+    private const int MAX_ERRORFREQ_SLIDER = 10;
+    private const string ERRORFREQ_STEP = "0.25";
+
     private IEnumerable<FakePerson>? fakePeople;
-    private int count = 10;
+    private int currentCount = 10;
     private string currentLocale = "en";
     private readonly List<string> locales = new()
     {
@@ -87,7 +89,7 @@
     private int currentTop;
     private int currentSeed;
     private double currentErrFrequency = 0;
-    private double sliderErrFrequency = 0;
+    private double sliderErrFrequencyValue = 0;
 
     private void LoadData(LoadDataArgs args)
     {
@@ -96,9 +98,9 @@
         Generate((int)args.Skip, (int)args.Top);
         currentSkip = (int)args.Skip;
         currentTop = (int)args.Top;
-        if (count >= int.MaxValue - 11) return;
+        if (currentCount >= int.MaxValue - 11) return;
         if (fakePeople == null) return;
-        count = fakePeople.Last().Num+11;
+        currentCount = fakePeople.Last().Num+11;
     }
 
     private void Generate(int skip, int top)
@@ -146,7 +148,7 @@
     {
         if (fakePeople == null) return;
         currentErrFrequency = value;
-        sliderErrFrequency = Math.Min(value, 10);
+        sliderErrFrequencyValue = Math.Min(value, 10);
         FakePersonGenService.Refresh(fakePeople, currentSeed, currentLocale);
         ApplyErrors(fakePeople);
 

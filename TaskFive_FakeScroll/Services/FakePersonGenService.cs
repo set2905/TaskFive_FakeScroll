@@ -1,10 +1,16 @@
-﻿using Bogus;
-using TaskFive_FakeScroll.Models;
+﻿using TaskFive_FakeScroll.Models;
 using TaskFive_FakeScroll.Services.Interfaces;
 namespace TaskFive_FakeScroll.Services
 {
     public class FakePersonGenService : IFakePersonGenService
     {
+        /// <summary>
+        /// Generates fake persons
+        /// </summary>
+        /// <param name="skip">How many items to skip</param>
+        /// <param name="take">How many items to take/generate</param>
+        /// <param name="locale"></param>
+        /// <param name="seed"></param>
         public List<FakePerson> GetFakePersons(int skip, int take, string locale, int seed)
         {
             List<FakePerson> result = new();
@@ -15,10 +21,14 @@ namespace TaskFive_FakeScroll.Services
             }
             return result;
         }
-
+        /// <summary>
+        /// Sets seed and locale to every instance of FakePerson in <paramref name="toReferesh"/>
+        /// </summary>
+        /// <param name="toReferesh"></param>
+        /// <param name="seed"></param>
+        /// <param name="locale"></param>
         public void Refresh(IEnumerable<FakePerson> toReferesh, int seed, string locale)
         {
-            //local seed в отдлельный метод!!!
             foreach (FakePerson fakePerson in toReferesh)
                 fakePerson.Refresh(seed+fakePerson.Num, locale);
         }
